@@ -17,6 +17,7 @@ var encoders []Encoder = []Encoder{
 	Encoder{ "Codepoint", EncCodepoint },
 
 	Encoder{ "Java String Literal", EncJava },
+	Encoder{ "HTML Entity", EncHTML },
 	
 	Encoder{ "ASCII", EncASCII },
 	
@@ -88,9 +89,17 @@ func MakeEncIconv(charset string, excludeAscii bool) func(char int) (bool, strin
 		s := string(char)
 		if excludeAscii && (char < 128) { return false, "" }
 		out, err := iconv.Conv(charset, "UTF-8", s)
-		must(err)
+		if err != nil { return false, "" }
 		if len(out) == 0 { return false, "" }
 		return true, encodeBytes(out)
 	}
 }
 
+func EncHTML(char int) (bool, string) {
+	symb, ok := entities[char]
+	symbStr := ""
+	if ok {
+		symbStr = fmt.Sprintf(" entity: &%s;", symb)
+	}
+	return true, fmt.Sprintf("decimal: &#%d; hexadecimal: &#%X;%s", char, char, symbStr)
+}

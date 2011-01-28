@@ -12,13 +12,6 @@ func must(err os.Error) {
 	}
 }
 
-type Decoder struct {
-	name string
-	fn func([]byte) (bool, int)
-}
-
-var decoders []Decoder
-
 func interpretInput(argument string) (string, int, []byte) {
 	for _, interpreter := range interpreters {
 		ok, char, bytes := interpreter.fn(argument)
@@ -36,19 +29,24 @@ func decodeInput(bytes []byte) map[string]int {
 	return r
 }
 
-func runEncoders(character int) map[string]string {
-	r := make(map[string]string)
+type EncodingResult struct {
+	name string
+	value string
+}
+
+func runEncoders(character int) []EncodingResult {
+	r := make([]EncodingResult, 0)
 	for _, encoder := range encoders {
 		ok, value := encoder.fn(character)
-		if ok { r[encoder.name] = value }
+		if ok { r = append(r, EncodingResult{ encoder.name, value }) }
 	}
 	return r
 }
 
 func runEncodersCL(character int, indent string) {
 	encodings := runEncoders(character)
-	for name, value := range encodings {
-		fmt.Printf("%sEncoded as %s:\t%s\n", indent, name, value)
+	for _, encoding := range encodings {
+		fmt.Printf("%sEncoded as %s:\t%s\n", indent, encoding.name, encoding.value)
 	}
 }
 
