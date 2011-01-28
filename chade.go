@@ -6,9 +6,10 @@ import (
 	"fmt"
 )
 
-type Interpreter struct {
-	name string
-	fn func(string) (bool, int, []byte);
+func must(err os.Error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 type Decoder struct {
@@ -16,26 +17,7 @@ type Decoder struct {
 	fn func([]byte) (bool, int)
 }
 
-type Encoder struct {
-	name string
-	fn func(int) (bool, string)
-}
-
-func IntCharacter (arg string) (bool, int, []byte) {
-	varg := []int(arg)
-	if len(varg) == 1 {
-		return true, varg[0], nil
-	}
-	return false, -1, nil
-}
-
-
-var interpreters []Interpreter = []Interpreter{
-	Interpreter{ "character", IntCharacter },
-}
-
 var decoders []Decoder
-var encoders []Encoder
 
 func interpretInput(argument string) (string, int, []byte) {
 	for _, interpreter := range interpreters {
@@ -66,7 +48,7 @@ func runEncoders(character int) map[string]string {
 func runEncodersCL(character int, indent string) {
 	encodings := runEncoders(character)
 	for name, value := range encodings {
-		fmt.Printf("%sEncoded as %s: %s\n", indent, name, value)
+		fmt.Printf("%sEncoded as %s:\t%s\n", indent, name, value)
 	}
 }
 
@@ -84,17 +66,14 @@ func main() {
 	fmt.Printf("Interpreted as %s\n", name)
 
 	if bytes == nil {
+		fmt.Printf("\n")
 		runEncodersCL(character, "")
 	} else {
 		characters := decodeInput(bytes)
 		for decoderName, character := range characters {
-			fmt.Printf("Decoded as %s:\n", decoderName)
+			fmt.Printf("Decoded as %s:\n\n", decoderName)
 			runEncodersCL(character, "\t")
 			fmt.Printf("\n")
 		}
 	}
-
-	//TODO:
-	// - decoder input (un decoder unico se l'input viene interpretato come carattere, altrimenti multipli per l'input interpretato come sequenza di byte)
-	// - encoders multipli (per visualizzare tutte le possibilita`)
 }
