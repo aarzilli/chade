@@ -15,6 +15,7 @@ var encoders []Encoder = []Encoder{
 	Encoder{ "Character", EncCharacter },
 	
 	Encoder{ "Codepoint", EncCodepoint },
+	Encoder{ "Unicode Informations", EncUnicodeInfo },
 
 	Encoder{ "Java String Literal", EncJava },
 	Encoder{ "HTML Entity", EncHTML },
@@ -66,6 +67,10 @@ func EncCharacter(char int) (bool, string) {
 
 func EncCodepoint(char int) (bool, string) {
 	return true, fmt.Sprintf("%X (decimal: %d)", char, char)
+}
+
+func EncUnicodeInfo(char int) (bool, string) {
+	return true, "\n"+UnicodeDataFile[char].String()
 }
 
 func EncUtf8(char int) (bool, string) {

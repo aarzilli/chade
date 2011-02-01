@@ -51,6 +51,8 @@ func runEncodersCL(character int, indent string) {
 }
 
 func main() {
+	InitUnicodeData()
+	
 	argument :=  strings.Join(os.Args[1:], " ")
 	fmt.Printf("Argument: [%s]\n", argument)
 
