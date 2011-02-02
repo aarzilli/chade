@@ -27,21 +27,25 @@ type UnicodeData struct {
 }
 
 func (ud *UnicodeData) String() string {
-	return "Name: " + ud.Name + "\n" +
-		"Block: " + ud.Block + "\n" +
-		"General Category: " + ud.GeneralCategory + "\n" +
-		"Canonical Combining Class: " + ud.CanonicalCombiningClass + "\n" +
-		"Bidi Class: " + ud.BidiClass + "\n" +
-		"Decomposition Type: " + ud.DecompositionType + "\n" +
-		"Decomposition Mapping: " + ud.DecompositionMapping + "\n" +
-		"Numeric Type: " + ud.NumericType + "\n" +
-		"Numeric Value: " + ud.NumericValue + "\n" +
-		"Bidi Mirrored: " + ud.BidiMirrored + "\n" +
-		"Unicode 1 Name: " + ud.Unicode1Name + "\n" +
-		"ISO Comment: " + ud.ISOComment + "\n" +
-		"Simple Uppercase Mapping: " + ud.SimpleUppercaseMapping + "\n" +
-		"Simple Lowercase Mapping: " + ud.SimpleLowercaseMapping + "\n" +
-		"Simple Titlecase Mapping: " + ud.SimpleTitlecaseMapping + "\n"
+	r := ""
+	
+	r += "Name: " + ud.Name + "\n"
+	r += "Block: " + ud.Block + "\n"
+	if ud.GeneralCategory != "" { r += "General Category: " + ud.GeneralCategory + "\n" }
+	if ud.CanonicalCombiningClass != "" { r += "Canonical Combining Class: " + ud.CanonicalCombiningClass + "\n" }
+	if ud.BidiClass != "" { r += "Bidi Class: " + ud.BidiClass + "\n" }
+	if ud.DecompositionType != "" { r += "Decomposition Type: " + ud.DecompositionType + "\n" }
+	if ud.DecompositionMapping != "" { r += "Decomposition Mapping: " + ud.DecompositionMapping + "\n" }
+	if ud.NumericType != "" { r += "Numeric Type: " + ud.NumericType + "\n" }
+	if ud.NumericValue != "" { r += "Numeric Value: " + ud.NumericValue + "\n" }
+	if ud.BidiMirrored != "" { r += "Bidi Mirrored: " + ud.BidiMirrored + "\n" }
+	if ud.Unicode1Name != "" { r += "Unicode 1 Name: " + ud.Unicode1Name + "\n" }
+	if ud.ISOComment != "" { r += "ISO Comment: " + ud.ISOComment + "\n" }
+	if ud.SimpleUppercaseMapping != "" { r += "Simple Uppercase Mapping: " + ud.SimpleUppercaseMapping + "\n" }
+	if ud.SimpleLowercaseMapping != "" { r += "Simple Lowercase Mapping: " + ud.SimpleLowercaseMapping + "\n" }
+	if ud.SimpleTitlecaseMapping != "" { r += "Simple Titlecase Mapping: " + ud.SimpleTitlecaseMapping + "\n" }
+
+	return r
 }
 
 func MakeFromUnicodeDataLine(line string) (int, *UnicodeData) {
