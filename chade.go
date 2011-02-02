@@ -53,7 +53,7 @@ func runEncodersCL(character int, indent string) {
 func main() {
 	InitUnicodeData()
 	
-	argument :=  strings.Join(os.Args[1:], " ")
+	argument :=  strings.TrimSpace(strings.Join(os.Args[1:], " "))
 	fmt.Printf("Argument: [%s]\n", argument)
 
 	name, character, bytes := interpretInput(argument)
