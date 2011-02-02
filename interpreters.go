@@ -16,6 +16,7 @@ var interpreters []Interpreter = []Interpreter{
 	Interpreter{ "Java literal", IntJava },
 	Interpreter{ "HTML decimal character reference", IntHTMLDec },
 	Interpreter{ "HTML hexadecimal character reference", IntHTMLHex },
+	Interpreter{ "HTML entity", IntHTMLEntity },
 }
 
 func IntCharacter(arg string) (bool, int, []byte) {
@@ -59,4 +60,14 @@ var HTMLHexRE *regexp.Regexp = regexp.MustCompile("^&#[0-9a-fA-F]+;$")
 func IntHTMLHex(arg string) (bool, int, []byte) {
 	if !HTMLHexRE.MatchString(arg) { return false, -1, nil }
 	return interpretCodepoint(arg[2:len(arg)-1], true)
+}
+
+var HTMLEntityRE *regexp.Regexp = regexp.MustCompile("^&[a-zA-Z]+;$")
+
+func IntHTMLEntity(arg string) (bool, int, []byte) {
+	if !HTMLEntityRE.MatchString(arg) { return false, -1, nil }
+	name := arg[1:len(arg)-1]
+	codepoint, ok := entityLookup[name]
+	if !ok { return false, -1, nil }
+	return true, codepoint, nil
 }

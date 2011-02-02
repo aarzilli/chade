@@ -52,6 +52,7 @@ func runEncodersCL(character int, indent string) {
 
 func main() {
 	InitUnicodeData()
+	InitHTMLEntities()
 	
 	argument :=  strings.TrimSpace(strings.Join(os.Args[1:], " "))
 	fmt.Printf("Argument: [%s]\n", argument)
