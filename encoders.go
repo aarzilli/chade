@@ -4,6 +4,7 @@ import (
 	"iconv"
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 type Encoder struct {
@@ -60,8 +61,10 @@ func encodeBytes(s string) string {
 }
 
 func EncCharacter(char int) (bool, string) {
+
+	if unicode.Is(unicode.Cc, char) || unicode.Is(unicode.Cf, char) || unicode.Is(unicode.Co, char) || unicode.Is(unicode.Cs, char) || unicode.Is(unicode.Zl, char) || unicode.Is(unicode.Zp, char) || unicode.Is(unicode.Zs, char) { return false, "" }
 	s := string(char)
-	//TODO: non visualizzare caratteri di controllo, spazi, accenti composizionali, caratteri in private area e pezzi di coppie surrogate in questo modo
+
 	return true, s
 }
 
