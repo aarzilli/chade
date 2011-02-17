@@ -20,11 +20,13 @@ func interpretInput(argument string) (string, int, []byte) {
 	return "", -1, nil
 }
 
-func decodeInput(bytes []byte) map[string]int {
-	r := make(map[string]int)
+func decodeInput(bytes []byte) map[int][]string {
+	r := make(map[int][]string)
 	for _, decoder := range decoders {
 		ok, char := decoder.fn(bytes)
-		if ok { r[decoder.name] = char }
+		if ok {
+			r[char] = append(r[char], decoder.name)
+		}
 	}
 	return r
 }
@@ -71,8 +73,8 @@ func main() {
 		runEncodersCL(character, "")
 	} else {
 		characters := decodeInput(bytes)
-		for decoderName, character := range characters {
-			fmt.Printf("Decoded as %s:\n\n", decoderName)
+		for character, decoderNames := range characters {
+			fmt.Printf("Decoded as %v:\n\n", decoderNames)
 			runEncodersCL(character, "\t")
 			fmt.Printf("\n")
 		}
