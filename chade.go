@@ -20,15 +20,18 @@ func interpretInput(argument string) (string, int, []byte) {
 	return "", -1, nil
 }
 
-func decodeInput(bytes []byte) map[int][]string {
+func decodeInput(bytes []byte) (map[int][]string, map[string]string) {
 	r := make(map[int][]string)
+	reasons := make(map[string]string)
 	for _, decoder := range decoders {
-		ok, char := decoder.fn(bytes)
+		ok, char, reason := decoder.fn(bytes)
 		if ok {
 			r[char] = append(r[char], decoder.name)
+		} else {
+			reasons[decoder.name] = reason
 		}
 	}
-	return r
+	return r, reasons
 }
 
 type EncodingResult struct {
@@ -72,11 +75,14 @@ func main() {
 		fmt.Printf("\n")
 		runEncodersCL(character, "")
 	} else {
-		characters := decodeInput(bytes)
+		characters, reasons := decodeInput(bytes)
 		for character, decoderNames := range characters {
 			fmt.Printf("Decoded as %v:\n\n", decoderNames)
 			runEncodersCL(character, "\t")
 			fmt.Printf("\n")
+		}
+		for decoderName, reason := range reasons {
+			fmt.Printf("Can not be decoded as %s because %s\n", decoderName, reason);
 		}
 	}
 }
