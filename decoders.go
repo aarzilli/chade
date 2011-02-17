@@ -2,6 +2,7 @@ package main
 
 import (
 	"iconv"
+	"fmt"
 )
 
 type Decoder struct {
@@ -12,7 +13,8 @@ type Decoder struct {
 var decoders []Decoder = []Decoder{
 	Decoder{ "ASCII", DecASCII },
 
-	// UTF-8
+	Decoder{ "UTF-8", DecUtf8 },
+
 	// UTF-16LE
 	// UTF-16BE
 	
@@ -50,6 +52,7 @@ func DecASCII(in []byte) (bool, int, string) {
 
 func MakeDecIconv(charset string) func([]byte) (bool, int, string) {
 	return func(in []byte) (bool, int, string) {
+		if len(in) != 1 { return false, -1, "More than one character" }
 		out, err := iconv.Conv("UTF-8", charset, string(in))
 		if err != nil { return false, -1, "Rejected by iconv" }
 		if len(out) == 0 { return false, -1, "Rejected by iconv" }
@@ -57,4 +60,43 @@ func MakeDecIconv(charset string) func([]byte) (bool, int, string) {
 	}
 }
 
+func Utf8Char1Decode(in byte) (length int, code byte) {
+	if in < 128 { return 1, in }
+	if in < 192 { return -1, 0 }
+	if in < 224 { return 2, in & 0x1F }
+	if in < 240 { return 3, in & 0x0F }
+	if in < 248 { return 4, in & 0x07 }
+	if in < 252 { return 5, in & 0x03 }
+	if in < 254 { return 6, in & 0x01 }
+	return -1, 0
+}
 
+func AcceptUtf8SequenceByte(in byte) (bool, byte) {
+	if in < 128 { return false, 0 }
+	if in >= 192 { return false, 0 }
+	return true, in & 0x3F
+}
+
+func DecUtf8(in []byte) (bool, int, string) {
+	var length, acccode int
+	
+	length, subcode := Utf8Char1Decode(in[0])
+	acccode = int(subcode)
+	if length == -1 {
+		return false, -1, "Invalid first byte of an utf8 sequence (FE or FF)"
+	}
+	if len(in) != length {
+		return false, -1, fmt.Sprintf("First byte requires a sequence of %d characters but %d characters were provided", length, len(in))
+	}
+
+	for i, abyte := range in[1:len(in)] {
+		if ok, subcode := AcceptUtf8SequenceByte(abyte); ok {
+			acccode <<= 6
+			acccode += int(subcode)
+		} else {
+			return false, -1, fmt.Sprintf("Character %d can not be part of an utf8 sequence", i)
+		}
+	}
+
+	return true, acccode, ""
+}
