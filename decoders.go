@@ -60,20 +60,18 @@ func MakeDecIconv(charset string) func([]byte) (bool, int, string) {
 }
 
 func Utf8Char1Decode(in byte) (length int, code byte) {
-	if in < 128 { return 1, in }
-	if in < 192 { return -1, 0 }
-	if in < 224 { return 2, in & 0x1F }
-	if in < 240 { return 3, in & 0x0F }
-	if in < 248 { return 4, in & 0x07 }
-	if in < 252 { return 5, in & 0x03 }
-	if in < 254 { return 6, in & 0x01 }
+	if in & 0x80 == 0x00 { return 1, in & 0x7F }
+	if in & 0xE0 == 0xC0 { return 2, in & 0x1F }
+	if in & 0xF0 == 0xE0 { return 3, in & 0x0F }
+	if in & 0xF8 == 0xF0 { return 4, in & 0x07 }
+	if in & 0xFC == 0xF8 { return 5, in & 0x03 }
+	if in & 0xFE == 0xFC { return 6, in & 0x01 }
+
 	return -1, 0
 }
 
 func AcceptUtf8SequenceByte(in byte) (bool, byte) {
-	if in < 128 { return false, 0 }
-	if in >= 192 { return false, 0 }
-	return true, in & 0x3F
+	return (in & 0xC0 == 0x80), in & 0x3F
 }
 
 func DecUtf8(in []byte) (bool, int, string) {
