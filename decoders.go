@@ -103,10 +103,10 @@ func DecUtf16LE(in []byte) (bool, int, string) {
 		return false, -1, fmt.Sprintf("Unacceptable number of bytes for an UTF-16 character (can be 2 or 4 was %d)", len(in))
 	}
 
-	ints := make([]uint16, len(in)/2+1)
+	ints := make([]uint16, len(in)/2)
 
 	for i := 0; i < len(in); i += 2 {
-		ints[i/2] = uint16(in[i]) + uint16(in[i+1] << 8)
+		ints[i/2] = uint16(in[i]) + (uint16(in[i+1]) << 8)
 	}
 
 	return DecUtf16Common(ints)
@@ -117,10 +117,10 @@ func DecUtf16BE(in []byte) (bool, int, string) {
 		return false, -1, fmt.Sprintf("Unacceptable number of bytes for an UTF-16 character (can be 2 or 4 was %d)", len(in))
 	}
 
-	ints := make([]uint16, len(in)/2+1)
+	ints := make([]uint16, len(in)/2)
 
 	for i := 0; i < len(in); i += 2 {
-		ints[i/2] = uint16(in[i] << 8) + uint16(in[i+1])
+		ints[i/2] = (uint16(in[i]) << 8) + uint16(in[i+1])
 	}
 
 	return DecUtf16Common(ints)
@@ -130,9 +130,9 @@ func DecUtf16Common(ints []uint16) (bool, int, string) {
 	if len(ints) == 1 {
 		return true, int(ints[0]), ""
 	}
-	
+
 	if (ints[0] < 0xd800) || (ints[0] > 0xdbff) {
-		return false, -1, "First element of the pair is not a high surrogate"
+		return false, -1, fmt.Sprintf("First element of the pair is not a high surrogate (%x)", ints[0])
 	}
 
 	hisur := ints[0] - 0xd800
@@ -143,5 +143,7 @@ func DecUtf16Common(ints []uint16) (bool, int, string) {
 
 	lowsur := ints[1] - 0xdc00
 
-	return true, int(uint16(hisur << 10) + uint16(lowsur)), ""
+	result := (uint32(hisur) << 10) + uint32(lowsur) + 0x10000
+
+	return true, int(result), ""
 }
