@@ -34,7 +34,6 @@ var decoders []Decoder = []Decoder{
 	Decoder{ "Shift-JIS", ShiftJISDecoder },
 	
 
-	// Shift-JIS
 	// ISO-2022-JS
 	// EUC-JP
 	// EUC-KR
@@ -175,10 +174,9 @@ func ClassifyShiftJISByte1(in byte) int {
 		if in == 0x80 { return FORBIDDEN_FIRST_BYTE }
 		return FIRST_BYTE
 	case 0x90: return FIRST_BYTE
-	case 0xA0:
+	case 0xA0, 0xB0, 0xC0, 0xD0:
 		if in == 0xA0 { return FORBIDDEN_FIRST_BYTE }
-		return FIRST_BYTE
-	case 0xB0, 0xC0, 0xD0: return SINGLE_BYTE
+		return SINGLE_BYTE
 	case 0xE0: return FIRST_BYTE
 	case 0xF0:
 		if (in >= 0xF3) && (in <= 0xF9) { return NONSTANDARD_FIRST_BYTE }
@@ -195,7 +193,7 @@ func ClassifyShiftJISByte2(in byte) int {
 		if in == 0x7F { return FORBIDDEN_SECOND_BYTE }
 		if in == 0x9F { return SECOND_BYTE_EVEN }
 		return SECOND_BYTE_ODD
-	case 0xA0, 0xB0, 0xC0, 0xD0, 0xF0:
+	case 0xA0, 0xB0, 0xC0, 0xD0, 0xE0, 0xF0:
 		if in <= 0xFD {
 			return SECOND_BYTE_EVEN }
 		return FORBIDDEN_SECOND_BYTE
@@ -208,17 +206,14 @@ func ClassifyShiftJISByte2(in byte) int {
 
 func ShiftJISCheckByte2(in []byte) string {
 	if len(in) > 2 { return "Too many bytes (never more than 2 bytes in a Shift-JIS character)" }
+	if len(in) < 2 { return fmt.Sprintf("Not enought bytes for Shift-JIS sequence starting with: %x", in[0]) }
 	switch ClassifyShiftJISByte2(in[1]) {
 	case FORBIDDEN_SECOND_BYTE:
-		return "Unacceptable second byte (and first byte was also non-standard";
+		return fmt.Sprintf("Unacceptable second byte: %x", in[1]);
 	case SECOND_BYTE_ODD:
-		if in[0] & 0x01 == 0x00 {
-			return "Mismatch between second byte and first byte (second byte requires an odd first byte)"
-		}
+		fallthrough
 	case SECOND_BYTE_EVEN:
-		if in[0] & 0x01 != 0x00 {
-			return "Mismatch between second byte and first byte (second byte requires an even first byte)"
-		}
+		return ""
 	}
 
 	return ""
@@ -229,6 +224,7 @@ func ShiftJISDecoder(in []byte) (bool, int, string) {
 	switch ClassifyShiftJISByte1(in[0]) {
 	case SINGLE_BYTE:
 		if len(in) > 1 { return false, -1, "Too many bytes, the first byte indicates only one is needed" }
+		return IconvDecoder(in, "shift_jis")
 	case FORBIDDEN_FIRST_BYTE:
 		return false, -1, "First (only?) byte is forbidden in Shift-JIS"
 	case FIRST_BYTE:
@@ -243,5 +239,5 @@ func ShiftJISDecoder(in []byte) (bool, int, string) {
 		return false, -1, "Non-standard first byte used (but everything else is ok, so this could be an emoji)"
 	}
 
-	return false, -1, "This shouldn't happen"
+	return false, -1, fmt.Sprintf("This shouldn't happen %d", ClassifyShiftJISByte1(in[0]))
 }

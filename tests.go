@@ -5,6 +5,33 @@ import (
 	"iconv"
 )
 
+func testJIS() {
+	count := 0
+	
+	for i := 0; i <= 0x10FFFF; i++ {
+		if (i & 0xFFFF) == 0 {
+			fmt.Printf("Examining %x\n", i)
+		}
+
+		// workaround for bug in glibc iconv implementation of shift_jis encoder
+		if i == 0x5c { continue }
+		if i == 0x7e { continue }
+
+		if shiftJISStr, err := iconv.Conv("shift_jis", "UTF-8", string(i)); err == nil {
+			count++
+			ok, out, reason := ShiftJISDecoder([]byte(shiftJISStr))
+			if !ok {
+				panic(fmt.Sprintf("Error decoding encoded shift jis character at codepoint %d: %s", i, reason))
+			}
+			if out != i {
+				panic(fmt.Sprintf("Decoding mismatch for character at codepoint %x, returned %x", i, out))
+			}
+		}
+	}
+
+	fmt.Printf("Examined %d characters\n")
+}
+
 func testUnidecode() {
 	for i := 0; i <= 0x10FFFF; i++ {
 		if (i & 0xFFFF) == 0 {

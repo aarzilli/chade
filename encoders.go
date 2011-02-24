@@ -96,6 +96,11 @@ func MakeEncIconv(charset string, excludeAscii bool) func(char int) (bool, strin
 	return func(char int) (bool, string) {
 		s := string(char)
 		if excludeAscii && (char < 128) { return false, "" }
+		// workaround for bug in glibc iconv implementation of shift_jis encoder
+		if charset == "shift_jis" {
+			if char == 0x5c { return false, "" }
+			if char == 0x7e { return false, "" }
+		}
 		out, err := iconv.Conv(charset, "UTF-8", s)
 		if err != nil { return false, "" }
 		if len(out) == 0 { return false, "" }

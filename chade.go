@@ -58,8 +58,11 @@ func runEncodersCL(character int, indent string) {
 func main() {
 	switch os.Args[1] {
 	case "test-unidecode":
-		testUnidecode();
-		return;
+		testUnidecode()
+		return
+	case "test-jis":
+		testJIS()
+		return
 	}
 	
 	InitUnicodeData()
