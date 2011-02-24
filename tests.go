@@ -10,14 +10,24 @@ func testJIS() {
 	
 	for i := 0; i <= 0x10FFFF; i++ {
 		if (i & 0xFFFF) == 0 {
-			fmt.Printf("Examining %x\n", i)
+			fmt.Printf("Examining %x (%d)\n", i, count)
 		}
 
-		// workaround for bug in glibc iconv implementation of shift_jis encoder
+		// workaround for bug in eglibc iconv implementation of shift_jis encoder
 		if i == 0x5c { continue }
 		if i == 0x7e { continue }
 
-		if shiftJISStr, err := iconv.Conv("shift_jis", "UTF-8", string(i)); err == nil {
+		// other workaround for adaptivity in eglibc iconv implementation
+		
+		if i == 0xffe0 { continue }
+		if i == 0xffe1 { continue }
+		if i == 0xffe2 { continue }
+
+		if shiftJISStr, err := iconv.Conv("shift_jis", "UTF-8", string(i)); (err == nil) && (len(shiftJISStr) > 0) {
+			//fmt.Printf("Input: %s\n", string(i))
+			//if (len(shiftJISStr) > 1) {
+			//	fmt.Printf("Stringa shift-jis: %x %x\n", []byte(shiftJISStr)[0], []byte(shiftJISStr)[1])
+			//}
 			count++
 			ok, out, reason := ShiftJISDecoder([]byte(shiftJISStr))
 			if !ok {
@@ -29,7 +39,7 @@ func testJIS() {
 		}
 	}
 
-	fmt.Printf("Examined %d characters\n")
+	fmt.Printf("Examined %d characters\n", count)
 }
 
 func testUnidecode() {

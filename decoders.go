@@ -55,6 +55,7 @@ func IconvDecoder(in []byte, charset string) (bool, int, string) {
 	out, err := iconv.Conv("UTF-8", charset, string(in))
 	if err != nil { return false, -1, "Rejected by iconv" }
 	if len(out) == 0 { return false, -1, "Rejected by iconv" }
+	//fmt.Printf("Output %s\n", out)
 	return true, []int(out)[0], ""
 }
 
