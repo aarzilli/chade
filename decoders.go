@@ -31,15 +31,15 @@ var decoders []Decoder = []Decoder{
 	Decoder{ "TIS-620 (thai)", MakeDecIconv("tis-620") },
 	Decoder{ "Windows-1258 (vietnamese)", MakeDecIconv("windows-1258") },
 
+	Decoder{ "BIG5", MakeDecIconv2("big5") },
+
 	Decoder{ "Shift-JIS", ShiftJISDecoder },
 	
+	
 
-	// ISO-2022-JS
 	// EUC-JP
 	// EUC-KR
-	// ISO-2022-KR
 	// EUC-CN (chinese)
-	// BIG5 (chinese)
 	// GBK (chinese)
 }
 
@@ -55,13 +55,21 @@ func IconvDecoder(in []byte, charset string) (bool, int, string) {
 	out, err := iconv.Conv("UTF-8", charset, string(in))
 	if err != nil { return false, -1, "Rejected by iconv" }
 	if len(out) == 0 { return false, -1, "Rejected by iconv" }
+	if len(out) > 1 { return false, -1, "More than one character encoded" }
 	//fmt.Printf("Output %s\n", out)
 	return true, []int(out)[0], ""
 }
 
 func MakeDecIconv(charset string) func([]byte) (bool, int, string) {
 	return func(in []byte) (bool, int, string) {
-		if len(in) != 1 { return false, -1, "More than one character" }
+		if len(in) != 1 { return false, -1, "More than one byte in input" }
+		return IconvDecoder(in, charset)
+	}
+}
+
+func MakeDecIconv2(charset string) func([]byte) (bool, int, string) {
+	return func(in []byte) (bool, int, string) {
+		if len(in) > 2 { return false, -1, "More than two bytes in input" }
 		return IconvDecoder(in, charset)
 	}
 }
